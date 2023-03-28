@@ -17,6 +17,9 @@ import java.awt.SystemColor;
 import javax.swing.JLabel;
 import javax.swing.ImageIcon;
 import java.awt.Font;
+import javax.swing.JTextField;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class Carometro extends JFrame {
 	
@@ -31,6 +34,7 @@ public class Carometro extends JFrame {
 	private JPanel contentPane;
 	private JLabel lblStatus;
 	private JLabel lblData;
+	private JTextField txtRA;
 
 	/**
 	 * Launch the application.
@@ -86,6 +90,24 @@ public class Carometro extends JFrame {
 		lblData.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		lblData.setBounds(25, 11, 390, 32);
 		panel.add(lblData);
+		
+		JLabel lblNewLabel = new JLabel("RA");
+		lblNewLabel.setBounds(32, 28, 46, 14);
+		contentPane.add(lblNewLabel);
+		
+		txtRA = new JTextField();
+		txtRA.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				String caracteres = "0123456789";
+				if(!caracteres.contains(e.getKeyChar() + "")) {
+					e.consume();
+				}
+			}
+		});
+		txtRA.setBounds(64, 25, 86, 20);
+		contentPane.add(txtRA);
+		txtRA.setColumns(10);
 	}
 	
 	private void status() {
