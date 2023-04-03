@@ -11,6 +11,8 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import model.DAO;
+import utils.Validador;
+
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.SystemColor;
@@ -35,6 +37,7 @@ public class Carometro extends JFrame {
 	private JLabel lblStatus;
 	private JLabel lblData;
 	private JTextField txtRA;
+	private JTextField txtNome;
 
 	/**
 	 * Launch the application.
@@ -92,7 +95,7 @@ public class Carometro extends JFrame {
 		panel.add(lblData);
 		
 		JLabel lblNewLabel = new JLabel("RA");
-		lblNewLabel.setBounds(32, 28, 46, 14);
+		lblNewLabel.setBounds(32, 28, 22, 14);
 		contentPane.add(lblNewLabel);
 		
 		txtRA = new JTextField();
@@ -105,9 +108,22 @@ public class Carometro extends JFrame {
 				}
 			}
 		});
-		txtRA.setBounds(64, 25, 86, 20);
+		txtRA.setBounds(70, 25, 94, 20);
 		contentPane.add(txtRA);
 		txtRA.setColumns(10);
+		// Uso do PlainDocument para limitar os campos
+		txtRA.setDocument(new Validador(6));
+		
+		JLabel lblNewLabel_1 = new JLabel("Nome");
+		lblNewLabel_1.setBounds(32, 78, 41, 14);
+		contentPane.add(lblNewLabel_1);
+		
+		txtNome = new JTextField();
+		txtNome.setBounds(70, 75, 223, 20);
+		contentPane.add(txtNome);
+		txtNome.setColumns(10);
+		// Uso do PlainDocument para limitar os campos
+		txtNome.setDocument(new Validador(30));
 	}
 	
 	private void status() {
