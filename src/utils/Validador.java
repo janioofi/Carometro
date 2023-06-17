@@ -6,9 +6,6 @@ import javax.swing.text.PlainDocument;
 
 public class Validador extends PlainDocument {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private int limite;
 

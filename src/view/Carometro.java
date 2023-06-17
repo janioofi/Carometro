@@ -1,27 +1,35 @@
 package view;
 
 import java.awt.EventQueue;
+import java.awt.Font;
+import java.awt.Image;
+import java.awt.SystemColor;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.FileInputStream;
 import java.sql.Connection;
 import java.text.DateFormat;
 import java.util.Date;
 
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import model.DAO;
 import utils.Validador;
-
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.SystemColor;
-import javax.swing.JLabel;
-import javax.swing.ImageIcon;
-import java.awt.Font;
-import javax.swing.JTextField;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 
 public class Carometro extends JFrame {
 	
@@ -29,6 +37,12 @@ public class Carometro extends JFrame {
 	DAO dao = new DAO();
 	private Connection con;
 
+	//Instanciar Objeto para o fluxo de bytes
+	private FileInputStream fis;
+	
+	//Variavel global para armazenar o tamanho da imagem(bytes)
+	private int tamanho;
+	
 	/**
 	 * 
 	 */
@@ -38,6 +52,7 @@ public class Carometro extends JFrame {
 	private JLabel lblData;
 	private JTextField txtRA;
 	private JTextField txtNome;
+	private JLabel lblFoto;
 
 	/**
 	 * Launch the application.
@@ -124,6 +139,23 @@ public class Carometro extends JFrame {
 		txtNome.setColumns(10);
 		// Uso do PlainDocument para limitar os campos
 		txtNome.setDocument(new Validador(30));
+		
+		lblFoto = new JLabel("");
+		lblFoto.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		lblFoto.setIcon(new ImageIcon(Carometro.class.getResource("/img/camera.png")));
+		lblFoto.setBounds(397, 25, 200, 200);
+		contentPane.add(lblFoto);
+		
+		JButton btnCarregar = new JButton("Carregar foto");
+		btnCarregar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				carregarFoto();
+			}
+		});
+		btnCarregar.setForeground(SystemColor.textHighlight);
+		btnCarregar.setBounds(137, 155, 128, 23);
+		contentPane.add(btnCarregar);
+
 	}
 	
 	private void status() {
@@ -146,5 +178,24 @@ public class Carometro extends JFrame {
 		Date data = new Date();
 		DateFormat formatador = DateFormat.getDateInstance(DateFormat.FULL);
 		lblData.setText(formatador.format(data));
+	}
+	
+	private void carregarFoto() {
+		JFileChooser jfc = new JFileChooser();
+		jfc.setDialogTitle("Selecionar arquivo");
+		jfc.setFileFilter(new FileNameExtensionFilter("Arquivo de imagens(*.PNG, *JPG, *JPEG)", "png", "jpg", "jpeg"));
+		int resultado = jfc.showOpenDialog(this);
+		if(resultado == JFileChooser.APPROVE_OPTION) {
+			try {
+				fis = new FileInputStream(jfc.getSelectedFile());
+				tamanho = (int) jfc.getSelectedFile().length();
+				Image foto = ImageIO.read(jfc.getSelectedFile()).getScaledInstance(lblFoto.getWidth(), lblFoto.getHeight(), Image.SCALE_SMOOTH);
+				lblFoto.setIcon(new ImageIcon(foto));
+				lblFoto.updateUI();
+			}
+			catch(Exception e) {
+				System.out.println(e);
+			}
+		}
 	}
 }
