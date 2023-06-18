@@ -13,15 +13,18 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.FileInputStream;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.text.DateFormat;
 import java.util.Date;
 
 import javax.imageio.ImageIO;
+import javax.management.loading.PrivateClassLoader;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
@@ -36,6 +39,7 @@ public class Carometro extends JFrame {
 	// Instanciar objetos
 	DAO dao = new DAO();
 	private Connection con;
+	private PreparedStatement pst;
 
 	//Instanciar Objeto para o fluxo de bytes
 	private FileInputStream fis;
@@ -153,8 +157,19 @@ public class Carometro extends JFrame {
 			}
 		});
 		btnCarregar.setForeground(SystemColor.textHighlight);
-		btnCarregar.setBounds(137, 155, 128, 23);
+		btnCarregar.setBounds(165, 118, 128, 23);
 		contentPane.add(btnCarregar);
+		
+		JButton btnAdicionar = new JButton("");
+		btnAdicionar.setToolTipText("Adicionar");
+		btnAdicionar.setIcon(new ImageIcon(Carometro.class.getResource("/img/create.png")));
+		btnAdicionar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				adicionar();
+			}
+		});
+		btnAdicionar.setBounds(32, 185, 60, 60);
+		contentPane.add(btnAdicionar);
 
 	}
 	
@@ -196,6 +211,25 @@ public class Carometro extends JFrame {
 			catch(Exception e) {
 				System.out.println(e);
 			}
+		}
+	}
+	
+	private void adicionar() {
+		String insert =  "INSERT INTO alunos(nome, foto) VALUES (?, ?)";
+		try {
+			 con = dao.conectar();
+			 pst = con.prepareStatement(insert);
+			 pst.setString(1, txtNome.getText());
+			 pst.setBlob(2, fis, tamanho);
+			 int confirma = pst.executeUpdate();
+			 if(confirma == 1) {
+				 JOptionPane.showMessageDialog(null, "Aluno cadastrado com sucesso!");
+			 }else {
+				 JOptionPane.showMessageDialog(null, "Erro!! Aluno não cadastrado.");
+			 }
+			 con.close();
+		} catch(Exception e) {
+			System.out.println(e.getMessage());
 		}
 	}
 }
