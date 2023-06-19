@@ -170,6 +170,17 @@ public class Carometro extends JFrame {
 		});
 		btnAdicionar.setBounds(32, 185, 60, 60);
 		contentPane.add(btnAdicionar);
+		
+		JButton btnReset = new JButton("");
+		btnReset.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				reset();
+			}
+		});
+		btnReset.setIcon(new ImageIcon(Carometro.class.getResource("/img/eraser.png")));
+		btnReset.setToolTipText("Limpar Campos");
+		btnReset.setBounds(231, 185, 60, 60);
+		contentPane.add(btnReset);
 
 	}
 
@@ -228,6 +239,7 @@ public class Carometro extends JFrame {
 				int confirma = pst.executeUpdate();
 				if (confirma == 1) {
 					JOptionPane.showMessageDialog(null, "Aluno cadastrado com sucesso!");
+					reset();
 				} else {
 					JOptionPane.showMessageDialog(null, "Erro!! Aluno não cadastrado.");
 				}
@@ -236,5 +248,12 @@ public class Carometro extends JFrame {
 				System.out.println(e.getMessage());
 			}
 		}
+	}
+
+	private void reset() {
+		txtRA.setText(null);
+		txtNome.setText(null);
+		lblFoto.setIcon(new ImageIcon(Carometro.class.getResource("/img/camera.png/")));
+		txtNome.requestFocus();
 	}
 }
