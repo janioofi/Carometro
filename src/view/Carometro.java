@@ -35,18 +35,18 @@ import model.DAO;
 import utils.Validador;
 
 public class Carometro extends JFrame {
-	
+
 	// Instanciar objetos
 	DAO dao = new DAO();
 	private Connection con;
 	private PreparedStatement pst;
 
-	//Instanciar Objeto para o fluxo de bytes
+	// Instanciar Objeto para o fluxo de bytes
 	private FileInputStream fis;
-	
-	//Variavel global para armazenar o tamanho da imagem(bytes)
+
+	// Variavel global para armazenar o tamanho da imagem(bytes)
 	private int tamanho;
-	
+
 	/**
 	 * 
 	 */
@@ -95,34 +95,34 @@ public class Carometro extends JFrame {
 
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-		
+
 		JPanel panel = new JPanel();
 		panel.setBackground(SystemColor.textHighlight);
 		panel.setBounds(0, 260, 624, 51);
 		contentPane.add(panel);
 		panel.setLayout(null);
-		
+
 		lblStatus = new JLabel("");
 		lblStatus.setIcon(new ImageIcon(Carometro.class.getResource("/img/dboff.png")));
 		lblStatus.setBounds(565, 11, 32, 32);
 		panel.add(lblStatus);
-		
+
 		lblData = new JLabel("");
 		lblData.setForeground(SystemColor.text);
 		lblData.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		lblData.setBounds(25, 11, 390, 32);
 		panel.add(lblData);
-		
+
 		JLabel lblNewLabel = new JLabel("RA");
 		lblNewLabel.setBounds(32, 28, 22, 14);
 		contentPane.add(lblNewLabel);
-		
+
 		txtRA = new JTextField();
 		txtRA.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyTyped(KeyEvent e) {
 				String caracteres = "0123456789";
-				if(!caracteres.contains(e.getKeyChar() + "")) {
+				if (!caracteres.contains(e.getKeyChar() + "")) {
 					e.consume();
 				}
 			}
@@ -132,24 +132,24 @@ public class Carometro extends JFrame {
 		txtRA.setColumns(10);
 		// Uso do PlainDocument para limitar os campos
 		txtRA.setDocument(new Validador(6));
-		
+
 		JLabel lblNewLabel_1 = new JLabel("Nome");
 		lblNewLabel_1.setBounds(32, 78, 41, 14);
 		contentPane.add(lblNewLabel_1);
-		
+
 		txtNome = new JTextField();
 		txtNome.setBounds(70, 75, 223, 20);
 		contentPane.add(txtNome);
 		txtNome.setColumns(10);
 		// Uso do PlainDocument para limitar os campos
 		txtNome.setDocument(new Validador(30));
-		
+
 		lblFoto = new JLabel("");
 		lblFoto.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		lblFoto.setIcon(new ImageIcon(Carometro.class.getResource("/img/camera.png")));
 		lblFoto.setBounds(397, 25, 200, 200);
 		contentPane.add(lblFoto);
-		
+
 		JButton btnCarregar = new JButton("Carregar foto");
 		btnCarregar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -159,7 +159,7 @@ public class Carometro extends JFrame {
 		btnCarregar.setForeground(SystemColor.textHighlight);
 		btnCarregar.setBounds(165, 118, 128, 23);
 		contentPane.add(btnCarregar);
-		
+
 		JButton btnAdicionar = new JButton("");
 		btnAdicionar.setToolTipText("Adicionar");
 		btnAdicionar.setIcon(new ImageIcon(Carometro.class.getResource("/img/create.png")));
@@ -172,64 +172,69 @@ public class Carometro extends JFrame {
 		contentPane.add(btnAdicionar);
 
 	}
-	
+
 	private void status() {
 		try {
 			con = dao.conectar();
-			if(con == null) {
-				//System.out.println("Erro na conexão");
+			if (con == null) {
+				// System.out.println("Erro na conexão");
 				lblStatus.setIcon(new ImageIcon(Carometro.class.getResource("/img/dboff.png")));
-			}else {
-				//System.out.println("Conectado com sucesso");
+			} else {
+				// System.out.println("Conectado com sucesso");
 				lblStatus.setIcon(new ImageIcon(Carometro.class.getResource("/img/dbon.png")));
 			}
 			con.close();
-		} catch(Exception e) {
+		} catch (Exception e) {
 			System.out.println(e);
 		}
 	}
-	
+
 	private void setarData() {
 		Date data = new Date();
 		DateFormat formatador = DateFormat.getDateInstance(DateFormat.FULL);
 		lblData.setText(formatador.format(data));
 	}
-	
+
 	private void carregarFoto() {
 		JFileChooser jfc = new JFileChooser();
 		jfc.setDialogTitle("Selecionar arquivo");
 		jfc.setFileFilter(new FileNameExtensionFilter("Arquivo de imagens(*.PNG, *JPG, *JPEG)", "png", "jpg", "jpeg"));
 		int resultado = jfc.showOpenDialog(this);
-		if(resultado == JFileChooser.APPROVE_OPTION) {
+		if (resultado == JFileChooser.APPROVE_OPTION) {
 			try {
 				fis = new FileInputStream(jfc.getSelectedFile());
 				tamanho = (int) jfc.getSelectedFile().length();
-				Image foto = ImageIO.read(jfc.getSelectedFile()).getScaledInstance(lblFoto.getWidth(), lblFoto.getHeight(), Image.SCALE_SMOOTH);
+				Image foto = ImageIO.read(jfc.getSelectedFile()).getScaledInstance(lblFoto.getWidth(),
+						lblFoto.getHeight(), Image.SCALE_SMOOTH);
 				lblFoto.setIcon(new ImageIcon(foto));
 				lblFoto.updateUI();
-			}
-			catch(Exception e) {
+			} catch (Exception e) {
 				System.out.println(e);
 			}
 		}
 	}
-	
+
 	private void adicionar() {
-		String insert =  "INSERT INTO alunos(nome, foto) VALUES (?, ?)";
-		try {
-			 con = dao.conectar();
-			 pst = con.prepareStatement(insert);
-			 pst.setString(1, txtNome.getText());
-			 pst.setBlob(2, fis, tamanho);
-			 int confirma = pst.executeUpdate();
-			 if(confirma == 1) {
-				 JOptionPane.showMessageDialog(null, "Aluno cadastrado com sucesso!");
-			 }else {
-				 JOptionPane.showMessageDialog(null, "Erro!! Aluno não cadastrado.");
-			 }
-			 con.close();
-		} catch(Exception e) {
-			System.out.println(e.getMessage());
+		if (txtNome.getText().isEmpty()) {
+			JOptionPane.showMessageDialog(null, "Preencha o nome");
+			txtNome.requestFocus();
+		} else {
+			String insert = "INSERT INTO alunos(nome, foto) VALUES (?, ?)";
+			try {
+				con = dao.conectar();
+				pst = con.prepareStatement(insert);
+				pst.setString(1, txtNome.getText());
+				pst.setBlob(2, fis, tamanho);
+				int confirma = pst.executeUpdate();
+				if (confirma == 1) {
+					JOptionPane.showMessageDialog(null, "Aluno cadastrado com sucesso!");
+				} else {
+					JOptionPane.showMessageDialog(null, "Erro!! Aluno não cadastrado.");
+				}
+				con.close();
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+			}
 		}
 	}
 }
