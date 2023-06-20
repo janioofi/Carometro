@@ -11,14 +11,19 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.text.DateFormat;
 import java.util.Date;
 
 import javax.imageio.ImageIO;
 import javax.management.loading.PrivateClassLoader;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -40,6 +45,7 @@ public class Carometro extends JFrame {
 	DAO dao = new DAO();
 	private Connection con;
 	private PreparedStatement pst;
+	private ResultSet rs;
 
 	// Instanciar Objeto para o fluxo de bytes
 	private FileInputStream fis;
@@ -138,7 +144,7 @@ public class Carometro extends JFrame {
 		contentPane.add(lblNewLabel_1);
 
 		txtNome = new JTextField();
-		txtNome.setBounds(70, 75, 223, 20);
+		txtNome.setBounds(70, 75, 244, 20);
 		contentPane.add(txtNome);
 		txtNome.setColumns(10);
 		// Uso do PlainDocument para limitar os campos
@@ -157,7 +163,7 @@ public class Carometro extends JFrame {
 			}
 		});
 		btnCarregar.setForeground(SystemColor.textHighlight);
-		btnCarregar.setBounds(165, 118, 128, 23);
+		btnCarregar.setBounds(186, 120, 128, 23);
 		contentPane.add(btnCarregar);
 
 		JButton btnAdicionar = new JButton("");
@@ -168,7 +174,7 @@ public class Carometro extends JFrame {
 				adicionar();
 			}
 		});
-		btnAdicionar.setBounds(32, 185, 60, 60);
+		btnAdicionar.setBounds(32, 189, 60, 60);
 		contentPane.add(btnAdicionar);
 		
 		JButton btnReset = new JButton("");
@@ -179,8 +185,18 @@ public class Carometro extends JFrame {
 		});
 		btnReset.setIcon(new ImageIcon(Carometro.class.getResource("/img/eraser.png")));
 		btnReset.setToolTipText("Limpar Campos");
-		btnReset.setBounds(231, 185, 60, 60);
+		btnReset.setBounds(254, 189, 60, 60);
 		contentPane.add(btnReset);
+		
+		JButton btnBuscar = new JButton("Buscar");
+		btnBuscar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				buscarRA();
+			}
+		});
+		btnBuscar.setForeground(SystemColor.textHighlight);
+		btnBuscar.setBounds(186, 24, 128, 23);
+		contentPane.add(btnBuscar);
 
 	}
 
@@ -248,6 +264,43 @@ public class Carometro extends JFrame {
 				System.out.println(e.getMessage());
 			}
 		}
+	}
+	
+	private void buscarRA() {
+		if(txtRA.getText().isEmpty()) {
+			JOptionPane.showMessageDialog(null, "Digite o RA");
+		}else {
+			String readRA = "SELECT * FROM alunos WHERE ra = ?";
+			try {
+				con = dao.conectar();
+				pst = con.prepareStatement(readRA);
+				pst.setString(1, txtRA.getText());
+				rs = pst.executeQuery();
+				if(rs.next()) {
+					txtNome.setText(rs.getString(2));
+					Blob blob = (Blob) rs.getBlob(3);
+					byte[] img = blob.getBytes(1, (int) blob.length());
+					BufferedImage imagem = null;
+					try {
+						imagem = ImageIO.read(new ByteArrayInputStream(img));
+						
+					}
+					catch(Exception e) {
+						System.out.println(e.getMessage());
+					}
+					ImageIcon icone = new ImageIcon(imagem);
+					Icon foto = new ImageIcon(icone.getImage().getScaledInstance(lblFoto.getWidth(), lblFoto.getHeight(), imagem.SCALE_SMOOTH));
+					lblFoto.setIcon(foto);
+				}else {
+					JOptionPane.showMessageDialog(null, "Aluno não cadastrado");
+				}
+				con.close();
+			}
+			catch(Exception e) {
+				System.out.println(e.getMessage());
+			}
+		}
+		
 	}
 
 	private void reset() {
