@@ -23,6 +23,7 @@ import java.util.Date;
 
 import javax.imageio.ImageIO;
 import javax.management.loading.PrivateClassLoader;
+import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -38,6 +39,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import model.DAO;
 import utils.Validador;
+import javax.swing.JScrollPane;
+import javax.swing.JList;
 
 public class Carometro extends JFrame {
 
@@ -63,6 +66,8 @@ public class Carometro extends JFrame {
 	private JTextField txtRA;
 	private JTextField txtNome;
 	private JLabel lblFoto;
+	private JList<String> listNomes;
+	private JScrollPane scrollPaneLista;
 
 	/**
 	 * Launch the application.
@@ -101,6 +106,16 @@ public class Carometro extends JFrame {
 
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
+		
+		scrollPaneLista = new JScrollPane();
+		scrollPaneLista.setBorder(null);
+		scrollPaneLista.setVisible(false);
+		scrollPaneLista.setBounds(70, 103, 244, 81);
+		contentPane.add(scrollPaneLista);
+		
+		listNomes = new JList();
+		listNomes.setBorder(null);
+		scrollPaneLista.setViewportView(listNomes);
 
 		JPanel panel = new JPanel();
 		panel.setBackground(SystemColor.textHighlight);
@@ -144,6 +159,13 @@ public class Carometro extends JFrame {
 		contentPane.add(lblNewLabel_1);
 
 		txtNome = new JTextField();
+		txtNome.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		txtNome.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent e) {
+				listarNomes();
+			}
+		});
 		txtNome.setBounds(70, 75, 244, 20);
 		contentPane.add(txtNome);
 		txtNome.setColumns(10);
@@ -303,7 +325,29 @@ public class Carometro extends JFrame {
 		
 	}
 
+	private void listarNomes() { 
+		DefaultListModel<String> modelo = new DefaultListModel<>();
+		listNomes.setModel(modelo);
+		String readLista = "SELECT * FROM alunos WHERE nome like '" + txtNome.getText() + "%'" + "ORDER BY nome";
+		try {
+			con = dao.conectar();
+			pst = con.prepareStatement(readLista);
+			rs = pst.executeQuery();
+			while(rs.next()) {
+				scrollPaneLista.setVisible(true);
+				modelo.addElement(rs.getString(2));
+				if(txtNome.getText().isEmpty()) {
+					scrollPaneLista.setVisible(false);
+				}
+			}
+			con.close();
+		}catch(Exception e) {
+			System.out.println(e);
+		}
+	}
+	
 	private void reset() {
+		scrollPaneLista.setVisible(false);
 		txtRA.setText(null);
 		txtNome.setText(null);
 		lblFoto.setIcon(new ImageIcon(Carometro.class.getResource("/img/camera.png/")));
