@@ -41,6 +41,8 @@ import model.DAO;
 import utils.Validador;
 import javax.swing.JScrollPane;
 import javax.swing.JList;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class Carometro extends JFrame {
 
@@ -114,6 +116,12 @@ public class Carometro extends JFrame {
 		contentPane.add(scrollPaneLista);
 		
 		listNomes = new JList();
+		listNomes.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				buscarNome();
+			}
+		});
 		listNomes.setBorder(null);
 		scrollPaneLista.setViewportView(listNomes);
 
@@ -343,6 +351,40 @@ public class Carometro extends JFrame {
 			con.close();
 		}catch(Exception e) {
 			System.out.println(e);
+		}
+	}
+	
+	private void buscarNome() {
+		int linha = listNomes.getSelectedIndex();
+		if(linha >= 0) {
+			String  readNome = "SELECT * FROM alunos WHERE nome like '" + txtNome.getText() + "%'" + " ORDER BY nome limit " + (linha) + ", 1";
+			try {
+				con = dao.conectar();
+				pst = con.prepareStatement(readNome);
+				rs = pst.executeQuery();
+				while(rs.next()) {
+					scrollPaneLista.setVisible(false);
+					txtRA.setText(rs.getString(1));
+					txtNome.setText(rs.getString(2));
+					Blob blob = (Blob) rs.getBlob(3);
+					byte[] img = blob.getBytes(1, (int) blob.length());
+					BufferedImage imagem = null;
+					try {
+						imagem = ImageIO.read(new ByteArrayInputStream(img));
+						
+					}
+					catch(Exception e) {
+						System.out.println(e.getMessage());
+					}
+					ImageIcon icone = new ImageIcon(imagem);
+					Icon foto = new ImageIcon(icone.getImage().getScaledInstance(lblFoto.getWidth(), lblFoto.getHeight(), imagem.SCALE_SMOOTH));
+					lblFoto.setIcon(foto);
+				}
+			}catch(Exception e) {
+				
+			}
+		}else {
+			scrollPaneLista.setVisible(false);
 		}
 	}
 	
