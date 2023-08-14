@@ -70,6 +70,7 @@ public class Carometro extends JFrame {
 	private JLabel lblFoto;
 	private JList<String> listNomes;
 	private JScrollPane scrollPaneLista;
+	private JButton btnExcluir;
 
 	/**
 	 * Launch the application.
@@ -238,6 +239,17 @@ public class Carometro extends JFrame {
 		btnEditar.setToolTipText("Editar");
 		btnEditar.setBounds(104, 189, 60, 60);
 		contentPane.add(btnEditar);
+		
+		btnExcluir = new JButton("");
+		btnExcluir.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				excluir();
+			}
+		});
+		btnExcluir.setIcon(new ImageIcon(Carometro.class.getResource("/img/delete.png")));
+		btnExcluir.setToolTipText("Excluir");
+		btnExcluir.setBounds(174, 189, 60, 60);
+		contentPane.add(btnExcluir);
 
 	}
 
@@ -422,6 +434,26 @@ public class Carometro extends JFrame {
 			}
 		}else {
 			scrollPaneLista.setVisible(false);
+		}
+	}
+
+	private void excluir() {
+		int confirmaExcluir = new JOptionPane().showConfirmDialog(null, "Confirma a exclusão deste aluno ?", "Atenção!", JOptionPane.YES_NO_OPTION);
+		if(confirmaExcluir == JOptionPane.YES_OPTION) {
+			String delete = "DELETE FROM alunos WHERE ra=?";
+			try {
+				con  = dao.conectar();
+				pst = con.prepareStatement(delete);
+				pst.setString(1, txtRA.getText());
+				int confirma = pst.executeUpdate();
+				if(confirma == 1) {
+					reset();
+					JOptionPane.showMessageDialog(null, "Aluno excluido!");
+				}
+				con.close();
+			} catch (Exception e) {
+				System.out.print(e.getMessage());
+			}
 		}
 	}
 	
