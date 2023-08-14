@@ -227,6 +227,17 @@ public class Carometro extends JFrame {
 		btnBuscar.setForeground(SystemColor.textHighlight);
 		btnBuscar.setBounds(186, 24, 128, 23);
 		contentPane.add(btnBuscar);
+		
+		JButton btnEditar = new JButton("");
+		btnEditar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				editar();
+			}
+		});
+		btnEditar.setIcon(new ImageIcon(Carometro.class.getResource("/img/update.png")));
+		btnEditar.setToolTipText("Editar");
+		btnEditar.setBounds(104, 189, 60, 60);
+		contentPane.add(btnEditar);
 
 	}
 
@@ -288,6 +299,32 @@ public class Carometro extends JFrame {
 					reset();
 				} else {
 					JOptionPane.showMessageDialog(null, "Erro!! Aluno não cadastrado.");
+				}
+				con.close();
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+			}
+		}
+	}
+	
+	private void editar() {
+		if (txtNome.getText().isEmpty()) {
+			JOptionPane.showMessageDialog(null, "Preencha o nome");
+			txtNome.requestFocus();
+		} else {
+			String update = "UPDATE alunos SET nome=? , foto=? WHERE ra=?";
+			try {
+				con = dao.conectar();
+				pst = con.prepareStatement(update);
+				pst.setString(1, txtNome.getText());
+				pst.setBlob(2, fis, tamanho);
+				pst.setString(3, txtRA.getText());
+				int confirma = pst.executeUpdate();
+				if (confirma == 1) {
+					JOptionPane.showMessageDialog(null, "Aluno atualizado com sucesso!");
+					reset();
+				} else {
+					JOptionPane.showMessageDialog(null, "Erro!! Aluno não atualizado.");
 				}
 				con.close();
 			} catch (Exception e) {
