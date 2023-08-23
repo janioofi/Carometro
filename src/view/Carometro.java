@@ -109,13 +109,13 @@ public class Carometro extends JFrame {
 
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-		
+
 		scrollPaneLista = new JScrollPane();
 		scrollPaneLista.setBorder(null);
 		scrollPaneLista.setVisible(false);
 		scrollPaneLista.setBounds(70, 103, 244, 81);
 		contentPane.add(scrollPaneLista);
-		
+
 		listNomes = new JList();
 		listNomes.addMouseListener(new MouseAdapter() {
 			@Override
@@ -174,6 +174,12 @@ public class Carometro extends JFrame {
 			public void keyReleased(KeyEvent e) {
 				listarNomes();
 			}
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+					scrollPaneLista.setVisible(false);
+				}
+			}
 		});
 		txtNome.setBounds(70, 75, 244, 20);
 		contentPane.add(txtNome);
@@ -207,7 +213,7 @@ public class Carometro extends JFrame {
 		});
 		btnAdicionar.setBounds(32, 189, 60, 60);
 		contentPane.add(btnAdicionar);
-		
+
 		JButton btnReset = new JButton("");
 		btnReset.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -218,7 +224,7 @@ public class Carometro extends JFrame {
 		btnReset.setToolTipText("Limpar Campos");
 		btnReset.setBounds(254, 189, 60, 60);
 		contentPane.add(btnReset);
-		
+
 		JButton btnBuscar = new JButton("Buscar");
 		btnBuscar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -228,7 +234,7 @@ public class Carometro extends JFrame {
 		btnBuscar.setForeground(SystemColor.textHighlight);
 		btnBuscar.setBounds(186, 24, 128, 23);
 		contentPane.add(btnBuscar);
-		
+
 		JButton btnEditar = new JButton("");
 		btnEditar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -239,7 +245,7 @@ public class Carometro extends JFrame {
 		btnEditar.setToolTipText("Editar");
 		btnEditar.setBounds(104, 189, 60, 60);
 		contentPane.add(btnEditar);
-		
+
 		btnExcluir = new JButton("");
 		btnExcluir.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -298,6 +304,8 @@ public class Carometro extends JFrame {
 		if (txtNome.getText().isEmpty()) {
 			JOptionPane.showMessageDialog(null, "Preencha o nome");
 			txtNome.requestFocus();
+		} else if (tamanho == 0) {
+			JOptionPane.showMessageDialog(null, "Selecione uma foto");
 		} else {
 			String insert = "INSERT INTO alunos(nome, foto) VALUES (?, ?)";
 			try {
@@ -318,11 +326,13 @@ public class Carometro extends JFrame {
 			}
 		}
 	}
-	
+
 	private void editar() {
 		if (txtNome.getText().isEmpty()) {
 			JOptionPane.showMessageDialog(null, "Preencha o nome");
 			txtNome.requestFocus();
+		}else if (tamanho == 0) {
+			JOptionPane.showMessageDialog(null, "Selecione uma foto");
 		} else {
 			String update = "UPDATE alunos SET nome=? , foto=? WHERE ra=?";
 			try {
@@ -344,45 +354,44 @@ public class Carometro extends JFrame {
 			}
 		}
 	}
-	
+
 	private void buscarRA() {
-		if(txtRA.getText().isEmpty()) {
+		if (txtRA.getText().isEmpty()) {
 			JOptionPane.showMessageDialog(null, "Digite o RA");
-		}else {
+		} else {
 			String readRA = "SELECT * FROM alunos WHERE ra = ?";
 			try {
 				con = dao.conectar();
 				pst = con.prepareStatement(readRA);
 				pst.setString(1, txtRA.getText());
 				rs = pst.executeQuery();
-				if(rs.next()) {
+				if (rs.next()) {
 					txtNome.setText(rs.getString(2));
 					Blob blob = (Blob) rs.getBlob(3);
 					byte[] img = blob.getBytes(1, (int) blob.length());
 					BufferedImage imagem = null;
 					try {
 						imagem = ImageIO.read(new ByteArrayInputStream(img));
-						
-					}
-					catch(Exception e) {
+
+					} catch (Exception e) {
 						System.out.println(e.getMessage());
 					}
 					ImageIcon icone = new ImageIcon(imagem);
-					Icon foto = new ImageIcon(icone.getImage().getScaledInstance(lblFoto.getWidth(), lblFoto.getHeight(), imagem.SCALE_SMOOTH));
+					Icon foto = new ImageIcon(icone.getImage().getScaledInstance(lblFoto.getWidth(),
+							lblFoto.getHeight(), imagem.SCALE_SMOOTH));
 					lblFoto.setIcon(foto);
-				}else {
+				} else {
 					JOptionPane.showMessageDialog(null, "Aluno não cadastrado");
 				}
 				con.close();
-			}
-			catch(Exception e) {
+			} catch (Exception e) {
 				System.out.println(e.getMessage());
 			}
 		}
-		
+
 	}
 
-	private void listarNomes() { 
+	private void listarNomes() {
 		DefaultListModel<String> modelo = new DefaultListModel<>();
 		listNomes.setModel(modelo);
 		String readLista = "SELECT * FROM alunos WHERE nome like '" + txtNome.getText() + "%'" + "ORDER BY nome";
@@ -390,28 +399,29 @@ public class Carometro extends JFrame {
 			con = dao.conectar();
 			pst = con.prepareStatement(readLista);
 			rs = pst.executeQuery();
-			while(rs.next()) {
+			while (rs.next()) {
 				scrollPaneLista.setVisible(true);
 				modelo.addElement(rs.getString(2));
-				if(txtNome.getText().isEmpty()) {
+				if (txtNome.getText().isEmpty()) {
 					scrollPaneLista.setVisible(false);
 				}
 			}
 			con.close();
-		}catch(Exception e) {
+		} catch (Exception e) {
 			System.out.println(e);
 		}
 	}
-	
+
 	private void buscarNome() {
 		int linha = listNomes.getSelectedIndex();
-		if(linha >= 0) {
-			String  readNome = "SELECT * FROM alunos WHERE nome like '" + txtNome.getText() + "%'" + " ORDER BY nome limit " + (linha) + ", 1";
+		if (linha >= 0) {
+			String readNome = "SELECT * FROM alunos WHERE nome like '" + txtNome.getText() + "%'"
+					+ " ORDER BY nome limit " + (linha) + ", 1";
 			try {
 				con = dao.conectar();
 				pst = con.prepareStatement(readNome);
 				rs = pst.executeQuery();
-				while(rs.next()) {
+				while (rs.next()) {
 					scrollPaneLista.setVisible(false);
 					txtRA.setText(rs.getString(1));
 					txtNome.setText(rs.getString(2));
@@ -420,33 +430,34 @@ public class Carometro extends JFrame {
 					BufferedImage imagem = null;
 					try {
 						imagem = ImageIO.read(new ByteArrayInputStream(img));
-						
-					}
-					catch(Exception e) {
+
+					} catch (Exception e) {
 						System.out.println(e.getMessage());
 					}
 					ImageIcon icone = new ImageIcon(imagem);
-					Icon foto = new ImageIcon(icone.getImage().getScaledInstance(lblFoto.getWidth(), lblFoto.getHeight(), imagem.SCALE_SMOOTH));
+					Icon foto = new ImageIcon(icone.getImage().getScaledInstance(lblFoto.getWidth(),
+							lblFoto.getHeight(), imagem.SCALE_SMOOTH));
 					lblFoto.setIcon(foto);
 				}
-			}catch(Exception e) {
-				
+			} catch (Exception e) {
+
 			}
-		}else {
+		} else {
 			scrollPaneLista.setVisible(false);
 		}
 	}
 
 	private void excluir() {
-		int confirmaExcluir = new JOptionPane().showConfirmDialog(null, "Confirma a exclusão deste aluno ?", "Atenção!", JOptionPane.YES_NO_OPTION);
-		if(confirmaExcluir == JOptionPane.YES_OPTION) {
+		int confirmaExcluir = new JOptionPane().showConfirmDialog(null, "Confirma a exclusão deste aluno ?", "Atenção!",
+				JOptionPane.YES_NO_OPTION);
+		if (confirmaExcluir == JOptionPane.YES_OPTION) {
 			String delete = "DELETE FROM alunos WHERE ra=?";
 			try {
-				con  = dao.conectar();
+				con = dao.conectar();
 				pst = con.prepareStatement(delete);
 				pst.setString(1, txtRA.getText());
 				int confirma = pst.executeUpdate();
-				if(confirma == 1) {
+				if (confirma == 1) {
 					reset();
 					JOptionPane.showMessageDialog(null, "Aluno excluido!");
 				}
@@ -456,7 +467,7 @@ public class Carometro extends JFrame {
 			}
 		}
 	}
-	
+
 	private void reset() {
 		scrollPaneLista.setVisible(false);
 		txtRA.setText(null);
